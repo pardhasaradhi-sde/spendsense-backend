@@ -28,64 +28,70 @@ import java.util.Collection;
 @EnableMethodSecurity
 public class SecurityConfigDev {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource, JwtAuthenticationConverter jwtAuthenticationConverter) {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .cors(cors->cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //security headers
-                .headers(headers->headers
-                        .contentSecurityPolicy(csp->csp
-                                .policyDirectives("default-src 'self'; frame-ancestors 'none'"))
-                        .frameOptions(frame-> frame.deny())
-                        .xssProtection(xss->xss
-                                .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
-                        .httpStrictTransportSecurity(hsts->hsts
-                                .includeSubDomains(true)
-                                .maxAgeInSeconds(31536000)))
-                .oauth2ResourceServer(oauth2->oauth2
-                        .jwt(jwt->jwt
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/health").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/webhooks/**").permitAll()
-                        .requestMatchers("/swagger-ui/**","/api-docs/**","/swagger-ui.html","/v3/api-docs/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                );
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                        CorsConfigurationSource corsConfigurationSource,
+                        JwtAuthenticationConverter jwtAuthenticationConverter) {
+                http.csrf(AbstractHttpConfigurer::disable)
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // security headers
+                                .headers(headers -> headers
+                                                .contentSecurityPolicy(csp -> csp
+                                                                .policyDirectives(
+                                                                                "default-src 'self'; frame-ancestors 'none'"))
+                                                .frameOptions(frame -> frame.deny())
+                                                .xssProtection(xss -> xss
+                                                                .headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
+                                                .httpStrictTransportSecurity(hsts -> hsts
+                                                                .includeSubDomains(true)
+                                                                .maxAgeInSeconds(31536000)))
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(jwt -> jwt
+                                                                .jwtAuthenticationConverter(
+                                                                                jwtAuthenticationConverter())))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/health").permitAll()
+                                                .requestMatchers("/actuator/health").permitAll()
+                                                .requestMatchers("/webhooks/**").permitAll()
+                                                .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html",
+                                                                "/v3/api-docs/**")
+                                                .permitAll()
+                                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                                .anyRequest().authenticated());
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setPrincipalClaimName("sub");
-        converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
-        return converter;
-    }
-    @Bean
-    public Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
-        return new CustomJwtGrantedAuthoritiesConverter();
-    }
+        @Bean
+        public JwtAuthenticationConverter jwtAuthenticationConverter() {
+                JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+                converter.setPrincipalClaimName("sub");
+                converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
+                return converter;
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration=new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000",
-                "http://localhost:3001",
-                "https://spendsense.com"
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+        @Bean
+        public Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter() {
+                return new CustomJwtGrantedAuthoritiesConverter();
+        }
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(Arrays.asList(
+                                "http://localhost:3000",
+                                "http://localhost:3001",
+                                "http://localhost:5173",
+                                "https://spendsense.com"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
+                configuration.setAllowedHeaders(Arrays.asList("*"));
+                configuration.setAllowCredentials(true);
+                configuration.setMaxAge(3600L);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 }

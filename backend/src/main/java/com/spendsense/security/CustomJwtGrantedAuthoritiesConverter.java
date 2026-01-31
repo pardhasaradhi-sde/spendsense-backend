@@ -1,8 +1,7 @@
 package com.spendsense.security;
 
-import com.spendsense.exception.ResourceNotFoundException;
 import com.spendsense.model.User;
-import com.spendsense.repository.UserRepository;
+import com.spendsense.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,17 +16,18 @@ import java.util.List;
 @Component
 public class CustomJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-        //extract clerkuid from jwt
-        String clerkUserId=jwt.getSubject();
+        // extract clerkuid from jwt
+        String clerkUserId = jwt.getSubject();
 
-        User user=userRepository.findByClerkUserId(clerkUserId)
-                .orElseThrow(()->new ResourceNotFoundException("User not found"));
-        List<GrantedAuthority> authorities=new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_"+user.getRole().name()));
+        User user = userService.getOrCreateUser(clerkUserId);
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        // Handle null role for new users
+        String role = user.getRole() != null ? user.getRole().name() : "USER";
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
         return authorities;
     }
 

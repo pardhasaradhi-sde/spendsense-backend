@@ -26,9 +26,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    //called by clerkwebhook when user is created
-    public User createUserFromClerk(ClerkUserData clerkData)
-    {
+    // called by clerkwebhook when user is created
+    public User createUserFromClerk(ClerkUserData clerkData) {
         return userRepository.findByClerkUserId(clerkData.getId())
                 .orElseGet(() -> {
                     User user = new User();
@@ -41,8 +40,7 @@ public class UserService {
 
     }
 
-    public User updateUserFromClerk(ClerkUserData clerkData)
-    {
+    public User updateUserFromClerk(ClerkUserData clerkData) {
         User user = userRepository.findByClerkUserId(clerkData.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -54,8 +52,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteUserFromClerk(String clerkUserId)
-    {
+    public void deleteUserFromClerk(String clerkUserId) {
         Optional<User> userOptional = userRepository.findByClerkUserId(clerkUserId);
 
         if (userOptional.isPresent()) {
@@ -73,43 +70,50 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    //admin:get all users
-    public List<UserResponse> findAll(){
+    // admin:get all users
+    public List<UserResponse> findAll() {
         return userRepository.findAll()
                 .stream()
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
-    //admin: update user role
-    public User updateRole(UUID userId, UserRole role){
-        User user=userRepository.findById(userId)
-                .orElseThrow(()->new ResourceNotFoundException("User Not found"));
+    // admin: update user role
+    public User updateRole(UUID userId, UserRole role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
         user.setRole(role);
         user.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(user);
     }
 
-    public void delete(UUID userId){
-        User user=userRepository.findById(userId)
-                .orElseThrow(()->new ResourceNotFoundException("User Not found"));
+    public void delete(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
         userRepository.delete(user);
     }
 
+    // Get or Create user (JIT for Auth)
+    public User getOrCreateUser(String clerkUserId) {
+        return userRepository.findByClerkUserId(clerkUserId)
+                .orElseGet(() -> {
+                    User user = new User();
+                    user.setClerkUserId(clerkUserId);
+                    user.setName("New User"); // Placeholder until webhook updates it
+                    return userRepository.save(user);
+                });
+    }
 
     private String buildFullName(String firstName, String lastName) {
-        if(firstName==null && lastName==null){
+        if (firstName == null && lastName == null) {
             return null;
         }
-        if(firstName==null)
-        {
+        if (firstName == null) {
             return lastName;
         }
-        if(lastName==null)
-        {
+        if (lastName == null) {
             return firstName;
         }
-        return firstName +" "+ lastName;
+        return firstName + " " + lastName;
     }
 }
-

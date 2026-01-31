@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-
 @Service
 @Slf4j
 public class WebhookVerificationService {
@@ -16,25 +15,27 @@ public class WebhookVerificationService {
     @Value("${clerk.webhook-secret}")
     private String webhookSecret;
 
-    public void verifyWebHook(String payload, HttpHeaders headers){
-        try{
-            //extract svix headers
-            String svixId=headers.getFirst("svix-id");
-            String svixTimeStamp=headers.getFirst("svix-timestamp");
-            String svixSignature=headers.getFirst("svix-signature");
-            if(svixId==null||svixTimeStamp==null||svixSignature==null){
+    public void verifyWebHook(String payload, HttpHeaders headers) {
+        try {
+            // extract svix headers
+            String svixId = headers.getFirst("svix-id");
+            String svixTimeStamp = headers.getFirst("svix-timestamp");
+            String svixSignature = headers.getFirst("svix-signature");
+            if (svixId == null || svixTimeStamp == null || svixSignature == null) {
                 throw new RuntimeException("Missing Svix headers");
             }
-            //use svix sdk for verification
-            Webhook webhook = new Webhook(webhookSecret);
+            // use svix sdk for verification
+            // Sanitize secret to avoid IllegalArgumentException (Illegal base64 character
+            // 22 means quotes)
+            String sanitizedSecret = webhookSecret.replace("\"", "").trim();
+            Webhook webhook = new Webhook(sanitizedSecret);
             // Build headers map for verification - Svix expects net.http.HttpHeaders
             java.net.http.HttpHeaders httpHeaders = java.net.http.HttpHeaders.of(
                     java.util.Map.of(
                             "svix-id", java.util.List.of(svixId),
                             "svix-timestamp", java.util.List.of(svixTimeStamp),
-                            "svix-signature", java.util.List.of(svixSignature)
-                    ),
-                    (k, v) -> true  // BiPredicate that allows all headers
+                            "svix-signature", java.util.List.of(svixSignature)),
+                    (k, v) -> true // BiPredicate that allows all headers
             );
 
             // Verify signature
