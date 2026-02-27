@@ -23,5 +23,5 @@ public class CreateAccountRequest {
     @DecimalMin(value = "0.0", message = "Balance cannot be negative")
     private BigDecimal balance;
 
-    private Boolean isDefault=false;
+    private Boolean isDefault = false;
 }

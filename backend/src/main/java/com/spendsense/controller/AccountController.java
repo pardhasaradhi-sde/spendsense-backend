@@ -25,86 +25,81 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "Accounts", description = "Account management APIs")
 public class AccountController {
-    private final AccountService accountService;
-    private final UserPrincipal userPrincipal;
+        private final AccountService accountService;
+        private final UserPrincipal userPrincipal;
 
-    @PostMapping
-    @Operation(summary = "Create a new account", description = "Creates a new financial account for the user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Account created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    public ResponseEntity<AccountResponse> createAccount(
-            Authentication authentication,
-            @Valid @RequestBody CreateAccountRequest request
-            ){
-        User user=userPrincipal.getCurrentUser(authentication);
-        AccountResponse response=accountService.createAccount(user.getId(),request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+        @PostMapping
+        @Operation(summary = "Create a new account", description = "Creates a new financial account for the user")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Account created successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid request"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        public ResponseEntity<AccountResponse> createAccount(
+                        Authentication authentication,
+                        @Valid @RequestBody CreateAccountRequest request) {
+                User user = userPrincipal.getCurrentUser(authentication);
+                AccountResponse response = accountService.createAccount(user.getId(), request);
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+        }
 
-    @GetMapping
-    @Operation(summary = "Get user accounts", description = "Retrieves all accounts for the authenticated user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Accounts retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    public ResponseEntity<List<AccountResponse>> getUserAccounts(
-            Authentication authentication
-    ){
-        User user=userPrincipal.getCurrentUser(authentication);
-        List<AccountResponse> accounts=accountService.getUserAccounts(user.getId());
-        return new ResponseEntity<>(accounts, HttpStatus.OK);
-    }
+        @GetMapping
+        @Operation(summary = "Get user accounts", description = "Retrieves all accounts for the authenticated user")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Accounts retrieved successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        })
+        public ResponseEntity<List<AccountResponse>> getUserAccounts(
+                        Authentication authentication) {
+                User user = userPrincipal.getCurrentUser(authentication);
+                List<AccountResponse> accounts = accountService.getUserAccounts(user.getId());
+                return new ResponseEntity<>(accounts, HttpStatus.OK);
+        }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Get account by ID", description = "Retrieves a single account by its ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Account retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Account not found")
-    })
-    public ResponseEntity<AccountResponse> getAccount(
-            Authentication authentication,
-            @PathVariable UUID id
-    ){
-        User user=userPrincipal.getCurrentUser(authentication);
-        AccountResponse response=accountService.getAccountById(user.getId(),id);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+        @GetMapping("/{id}")
+        @Operation(summary = "Get account by ID", description = "Retrieves a single account by its ID")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Account retrieved successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                        @ApiResponse(responseCode = "404", description = "Account not found")
+        })
+        public ResponseEntity<AccountResponse> getAccount(
+                        Authentication authentication,
+                        @PathVariable UUID id) {
+                User user = userPrincipal.getCurrentUser(authentication);
+                AccountResponse response = accountService.getAccountById(user.getId(), id);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+        }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update account", description = "Updates an existing account")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Account updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Account not found")
-    })
-    public ResponseEntity<AccountResponse> updateAccount(
-            Authentication authentication,
-            @PathVariable UUID id,
-            @Valid @RequestBody UpdateAccountRequest request
-    ){
-        User user=userPrincipal.getCurrentUser(authentication);
-        AccountResponse response=accountService.updateAccount(user.getId(),id,request);
-        return new  ResponseEntity<>(response,HttpStatus.OK);
-    }
+        @PutMapping("/{id}")
+        @Operation(summary = "Update account", description = "Updates an existing account")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Account updated successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid request"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                        @ApiResponse(responseCode = "404", description = "Account not found")
+        })
+        public ResponseEntity<AccountResponse> updateAccount(
+                        Authentication authentication,
+                        @PathVariable UUID id,
+                        @Valid @RequestBody UpdateAccountRequest request) {
+                User user = userPrincipal.getCurrentUser(authentication);
+                AccountResponse response = accountService.updateAccount(user.getId(), id, request);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+        }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete account", description = "Deletes an account by its ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Account deleted successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Account not found")
-    })
-    public ResponseEntity<Void> deleteAccount(
-            Authentication authentication,
-            @PathVariable UUID id
-    ){
-        User user=userPrincipal.getCurrentUser(authentication);
-        accountService.deleteAccount(user.getId(),id);
-        return ResponseEntity.noContent().build();
-    }
+        @DeleteMapping("/{id}")
+        @Operation(summary = "Delete account", description = "Deletes an account by its ID")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Account deleted successfully"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                        @ApiResponse(responseCode = "404", description = "Account not found")
+        })
+        public ResponseEntity<Void> deleteAccount(
+                        Authentication authentication,
+                        @PathVariable UUID id) {
+                User user = userPrincipal.getCurrentUser(authentication);
+                accountService.deleteAccount(user.getId(), id);
+                return ResponseEntity.noContent().build();
+        }
 }

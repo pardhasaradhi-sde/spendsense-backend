@@ -1,5 +1,6 @@
 package com.spendsense.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.spendsense.model.enums.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,5 +20,7 @@ public class UserResponse {
     private String name;
     private String imageUrl;
     private UserRole role;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 }

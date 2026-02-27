@@ -1,0 +1,39 @@
+# =============================================
+# SpendSense Backend — .gitignore
+# =============================================
+
+# ---- Maven ----
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ---- Environment & Secrets — NEVER commit these ----
+.env
+.env.*
+*.env
+application-local.yml
+application-secrets.yml
+
+# ---- Storage / uploads — runtime-generated files ----
+storage/
+temp/
+uploads/
+
+# ---- IDE ----
+.idea/
+*.iml
+.vscode/
+*.DS_Store
+Thumbs.db
+
+# ---- Java / OS ----
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# ---- Spring Boot specific ----
+spring-shell.log

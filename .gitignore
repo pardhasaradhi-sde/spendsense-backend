@@ -82,3 +82,5 @@ desktop.ini
 # =========================
 *.sqlite
 *.db
+storage/*
+docs/*

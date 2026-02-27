@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @Profile("dev")
 @Configuration
@@ -29,14 +30,12 @@ import java.util.Collection;
 public class SecurityConfigDev {
 
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                        CorsConfigurationSource corsConfigurationSource,
-                        JwtAuthenticationConverter jwtAuthenticationConverter) {
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http.csrf(AbstractHttpConfigurer::disable)
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                // security headers
+                                // Security headers
                                 .headers(headers -> headers
                                                 .contentSecurityPolicy(csp -> csp
                                                                 .policyDirectives(
@@ -55,7 +54,10 @@ public class SecurityConfigDev {
                                                 .requestMatchers("/health").permitAll()
                                                 .requestMatchers("/actuator/health").permitAll()
                                                 .requestMatchers("/webhooks/**").permitAll()
-                                                .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html",
+                                                .requestMatchers(
+                                                                "/swagger-ui/**",
+                                                                "/api-docs/**",
+                                                                "/swagger-ui.html",
                                                                 "/v3/api-docs/**")
                                                 .permitAll()
                                                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -85,8 +87,9 @@ public class SecurityConfigDev {
                                 "http://localhost:3001",
                                 "http://localhost:5173",
                                 "https://spendsense.com"));
-                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
-                configuration.setAllowedHeaders(Arrays.asList("*"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setExposedHeaders(Arrays.asList("X-RateLimit-Remaining", "Authorization"));
                 configuration.setAllowCredentials(true);
                 configuration.setMaxAge(3600L);
 
