@@ -44,11 +44,7 @@
             <version>3.2.0</version>
         </dependency>
 
-        <!-- Email Support -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
+        <!-- Email via Resend HTTP API (SMTP blocked on Render free tier) -->
 
         <!-- PDF Generation -->
         <dependency>

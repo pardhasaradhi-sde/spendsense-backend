@@ -1,49 +1,69 @@
 package com.spendsense.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Email service for sending notifications
- * All email operations are async to improve performance
+ * Email service using Resend HTTP API.
+ * SMTP is blocked on Render free tier — HTTP API uses port 443 which is always open.
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${app.mail.from:noreply@spendsense.com}")
+    private static final String RESEND_API_URL = "https://api.resend.com/emails";
+
+    @Value("${resend.api-key}")
+    private String apiKey;
+
+    @Value("${app.mail.from:onboarding@resend.dev}")
     private String fromEmail;
+
+    /**
+     * Core send method — calls Resend HTTP API
+     */
+    private void doSend(String to, String subject, String html) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            Map<String, Object> body = Map.of(
+                    "from", fromEmail,
+                    "to", List.of(to),
+                    "subject", subject,
+                    "html", html
+            );
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(RESEND_API_URL, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Email sent successfully to: {}", to);
+            } else {
+                log.error("Failed to send email to {}: HTTP {}", to, response.getStatusCode());
+            }
+        } catch (Exception e) {
+            log.error("Failed to send email to {}: {}", to, e.getMessage(), e);
+        }
+    }
 
     /**
      * Send simple text email asynchronously
      */
     @Async
     public void sendSimpleEmail(String to, String subject, String text) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(text);
-
-            mailSender.send(message);
-            log.info("Email sent successfully to: {}", to);
-
-        } catch (Exception e) {
-            log.error("Failed to send email to {}: {}", to, e.getMessage(), e);
-        }
+        String html = "<pre style='font-family:Arial,sans-serif;white-space:pre-wrap'>" + text + "</pre>";
+        doSend(to, subject, html);
     }
 
     /**
@@ -51,21 +71,7 @@ public class EmailService {
      */
     @Async
     public void sendHtmlEmail(String to, String subject, String htmlContent) {
-        try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(mimeMessage);
-            log.info("HTML email sent successfully to: {}", to);
-
-        } catch (MessagingException e) {
-            log.error("Failed to send HTML email to {}: {}", to, e.getMessage(), e);
-        }
+        doSend(to, subject, htmlContent);
     }
 
     /**
